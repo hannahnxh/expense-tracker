@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #12181B;
+  color: #F4F1EA;
+  font-family: 'Inter', sans-serif;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background-color: #C9A15C;
+  color: #12181B;
+}
+
+/* Subtle ledger-line texture for card backgrounds */
+.ledger-lines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 27px,
+    rgba(244, 241, 234, 0.045) 28px
+  );
+}
