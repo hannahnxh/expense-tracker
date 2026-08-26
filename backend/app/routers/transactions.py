@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import get_db
+from .subscriptions import process_due_subscriptions
 
 router = APIRouter(prefix="/api/transactions", tags=["transactions"])
 
@@ -17,6 +18,7 @@ def list_transactions(
     end: Optional[dt.date] = None,
     limit: int = Query(default=200, le=1000),
 ):
+    process_due_subscriptions(db)
     q = db.query(models.Transaction)
     if type:
         q = q.filter(models.Transaction.type == type)

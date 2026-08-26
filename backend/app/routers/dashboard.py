@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import get_db
-from .subscriptions import _monthly_equivalent
+from .subscriptions import _monthly_equivalent, process_due_subscriptions
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -20,6 +20,7 @@ def dashboard_summary(
     end: dt.date | None = None,
     months: int = Query(default=6, le=24),
 ):
+    process_due_subscriptions(db)
     q = db.query(models.Transaction)
     if start:
         q = q.filter(models.Transaction.date >= start)
