@@ -21,7 +21,7 @@ export default function App() {
         <div className="max-w-6xl mx-auto px-6 pt-8 pb-5">
           <div className="flex items-baseline justify-between flex-wrap gap-2">
             <h1 className="font-display text-3xl tracking-tight text-paper flex items-center gap-2">
-              <CashStackIcon size={28} />
+              <CashStackIcon size={38} />
               cashapp
             </h1>
             <span className="text-xs tabular text-ink-600 uppercase tracking-widest">{dateStr}</span>
