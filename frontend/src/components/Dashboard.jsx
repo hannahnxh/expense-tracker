@@ -11,19 +11,28 @@ const monthLabel = (mk) => {
   const [y, m] = mk.split('-')
   return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString(undefined, { month: 'short' })
 }
+const isoDate = (d) => d.toISOString().slice(0, 10)
 
 export default function Dashboard() {
   const [summary, setSummary] = useState(null)
   const [subSummary, setSubSummary] = useState(null)
   const [error, setError] = useState(null)
 
+  const today = new Date()
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
+  const monthLabelText = today.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+
   useEffect(() => {
-    Promise.all([api.getDashboardSummary({ months: 6 }), api.getSubscriptionsSummary()])
+    Promise.all([
+      api.getDashboardSummary({ start: isoDate(monthStart), end: isoDate(today), months: 6 }),
+      api.getSubscriptionsSummary(),
+    ])
       .then(([s, sub]) => {
         setSummary(s)
         setSubSummary(sub)
       })
       .catch((e) => setError(e.message))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   if (error) {
@@ -43,6 +52,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
+      <div className="flex items-baseline justify-between">
+        <h1 className="font-display text-xl">Month to date</h1>
+        <span className="text-xs text-ink-600">{monthLabelText}</span>
+      </div>
+
       {/* Top-line stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="Income" value={fmt(summary.total_income)} accent="text-moss-400" />
