@@ -5,13 +5,13 @@ import {
 } from 'recharts'
 import { api } from '../api.js'
 import StatCard from './StatCard.jsx'
+import { toLocalISODate } from '../utils/date.js'
 
 const fmt = (n) => `$${Number(n ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const monthLabel = (mk) => {
   const [y, m] = mk.split('-')
   return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString(undefined, { month: 'short' })
 }
-const isoDate = (d) => d.toISOString().slice(0, 10)
 
 export default function Dashboard() {
   const [summary, setSummary] = useState(null)
@@ -24,7 +24,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     Promise.all([
-      api.getDashboardSummary({ start: isoDate(monthStart), end: isoDate(today), months: 6 }),
+      api.getDashboardSummary({ start: toLocalISODate(monthStart), end: toLocalISODate(today), months: 6 }),
       api.getSubscriptionsSummary(),
     ])
       .then(([s, sub]) => {

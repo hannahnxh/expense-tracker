@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api.js'
+import { todayLocalISODate as today } from '../utils/date.js'
 
 const fmt = (n) => `$${Number(n ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-const today = () => new Date().toISOString().slice(0, 10)
 
 const emptyForm = {
   name: '',
