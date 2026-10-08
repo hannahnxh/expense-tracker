@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Dashboard from './components/Dashboard.jsx'
 import ActivityPage from './components/ActivityPage.jsx'
 import SubscriptionsPage from './components/SubscriptionsPage.jsx'
@@ -23,9 +23,17 @@ export default function App() {
   const [adding, setAdding] = useState(false)
   const showFab = tab === 'overview' || tab === 'activity'
 
+  // iOS scrolls the window to reveal a focused field and sometimes leaves it shifted
+  // after the keyboard closes; snap it back so the nav stays at the bottom edge.
+  useEffect(() => {
+    const reset = () => setTimeout(() => window.scrollY && window.scrollTo(0, 0), 50)
+    window.addEventListener('focusout', reset)
+    return () => window.removeEventListener('focusout', reset)
+  }, [])
+
   return (
-    <div className="min-h-[100dvh] bg-ink-950 text-paper font-body">
-      <header className="border-b border-ink-700/60" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="fixed inset-0 flex flex-col bg-ink-950 text-paper font-body">
+      <header className="shrink-0 border-b border-ink-700/60" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-xl mx-auto px-5 py-4 flex items-baseline justify-between">
           <h1 className="font-display text-2xl tracking-tight">
             Ledger<span className="text-gold">.</span>
@@ -34,26 +42,29 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-xl mx-auto px-5 pt-5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 140px)' }}>
-        {tab === 'overview' && <Dashboard onAdd={() => setAdding(true)} />}
-        {tab === 'activity' && <ActivityPage />}
-        {tab === 'subs' && <SubscriptionsPage />}
-        {tab === 'data' && <DataPage />}
-      </main>
+      <div className="relative flex-1 min-h-0">
+        <main key={tab} className="absolute inset-0 overflow-y-auto overscroll-contain">
+          <div className="max-w-xl mx-auto px-5 pt-5 pb-24">
+            {tab === 'overview' && <Dashboard onAdd={() => setAdding(true)} />}
+            {tab === 'activity' && <ActivityPage />}
+            {tab === 'subs' && <SubscriptionsPage />}
+            {tab === 'data' && <DataPage />}
+          </div>
+        </main>
 
-      {showFab && (
-        <button
-          onClick={() => setAdding(true)}
-          aria-label="Add transaction"
-          className="fixed right-5 z-30 w-14 h-14 rounded-full bg-gold text-ink-950 text-3xl leading-none shadow-card active:scale-95 transition-transform"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 76px)' }}
-        >
-          +
-        </button>
-      )}
+        {showFab && (
+          <button
+            onClick={() => setAdding(true)}
+            aria-label="Add transaction"
+            className="absolute right-5 bottom-4 z-30 w-14 h-14 rounded-full bg-gold text-ink-950 text-3xl leading-none shadow-card active:scale-95 transition-transform"
+          >
+            +
+          </button>
+        )}
+      </div>
 
       <nav
-        className="fixed bottom-0 inset-x-0 z-20 bg-ink-900/95 backdrop-blur border-t border-ink-700/70"
+        className="shrink-0 z-20 bg-ink-900 border-t border-ink-700/70"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         aria-label="Main"
       >

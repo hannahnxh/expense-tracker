@@ -11,7 +11,7 @@ const TYPES = [
 
 const fieldLabel = 'text-[11px] uppercase tracking-widest text-ink-500'
 const fieldBox =
-  'w-full mt-1.5 bg-ink-800 border border-ink-700 rounded-lg px-3 py-3 focus:outline-none focus:border-gold'
+  'block w-full min-h-[3.25rem] mt-1.5 bg-ink-800 border border-ink-700 rounded-lg px-3.5 py-3 text-paper placeholder:text-ink-600 focus:outline-none focus:border-gold'
 
 export default function AddTransactionSheet({ onClose }) {
   const { categories } = useLedger()
@@ -43,7 +43,7 @@ export default function AddTransactionSheet({ onClose }) {
 
   return (
     <Sheet title="Add transaction" onClose={onClose}>
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className="space-y-5">
         <div className="grid grid-cols-3 gap-2" role="group" aria-label="Transaction type">
           {TYPES.map(([id, label]) => (
             <button
@@ -113,22 +113,21 @@ export default function AddTransactionSheet({ onClose }) {
           </label>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
-          <label className="block">
-            <span className={fieldLabel}>Date</span>
-            <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className={fieldBox} />
-          </label>
-          <label className="block">
-            <span className={fieldLabel}>Note</span>
-            <input
-              type="text"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Optional"
-              className={fieldBox}
-            />
-          </label>
-        </div>
+        <label className="block">
+          <span className={fieldLabel}>Date</span>
+          <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className={fieldBox} />
+        </label>
+
+        <label className="block">
+          <span className={fieldLabel}>Note</span>
+          <input
+            type="text"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Optional"
+            className={fieldBox}
+          />
+        </label>
 
         {error && (
           <p role="alert" className="text-rust-400 text-sm">
