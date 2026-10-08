@@ -1,97 +1,63 @@
-# Ledger — Expense Tracker
+# Ledger (local)
 
-A personal expense tracker with a dashboard (spending by category, savings/investments,
-subscription cost), a transaction log, and a subscription tracker.
+A private expense, savings and subscription tracker that lives on your phone.
+It's a Progressive Web App: install it from Safari/Chrome and it runs offline from
+your home screen. **There is no backend and no database server.** Everything you
+enter is stored on the device (browser `localStorage`) and is never uploaded.
 
-- **Backend:** Python, FastAPI, SQLAlchemy (SQLite by default, Postgres-ready)
-- **Frontend:** React (Vite), Tailwind CSS, Recharts
+- Overview: spending by category, saved vs. left over, bank vs. investments, subscription cost, 6-month trend, month-by-month navigation
+- Activity: every transaction, filterable, tap a row to delete
+- Subscriptions: monthly/yearly/weekly, auto-rolls the next charge date, "due soon" list
+- Data: export / restore a JSON backup, currency (default SGD), manage categories
 
-```
-expense-tracker/
-├── backend/     FastAPI app
-└── frontend/    React app (Vite)
-```
+Stack: React + Vite + Tailwind + Recharts, `vite-plugin-pwa` for the offline service worker. Fonts are bundled, so the app makes no network requests once installed.
 
-## 1. Run it locally
-
-### Backend
+## Run it on your computer
 
 ```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload  # http://localhost:8000
-```
-
-The first run creates `expenses.db` (SQLite) and seeds a handful of default
-categories automatically. API docs are at `http://localhost:8000/docs`.
-
-### Frontend
-
-```bash
-cd frontend
 npm install
-cp .env.example .env      # VITE_API_URL=http://localhost:8000
-npm run dev                # http://localhost:5173
+npm run dev        # http://localhost:5173 (also reachable from your phone on the same Wi-Fi)
+npm test           # data-layer tests
+npm run build      # static site in dist/
 ```
 
-## 2. Push to GitHub
+## Put it on your phone
 
-```bash
-cd expense-tracker
-git init
-git add .
-git commit -m "Initial commit: expense tracker"
-gh repo create expense-tracker --source=. --public --push
-# or: create the repo on github.com, then
-# git remote add origin <your-repo-url> && git push -u origin main
-```
+A phone can only install a web app from an `https://` address, so the built files need to
+be served once. They're plain static files, so GitHub Pages is free and nothing about your
+data touches it (it only hosts the app code).
 
-## 3. Deploy on Railway (two services, one repo)
+1. Create a GitHub repo and push this folder to `main`:
+   ```bash
+   git init && git add . && git commit -m "Ledger local"
+   git branch -M main
+   git remote add origin https://github.com/<you>/<repo>.git
+   git push -u origin main
+   ```
+2. In the repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+   The included workflow (`.github/workflows/pages.yml`) builds and publishes on every push.
+3. Open `https://<you>.github.io/<repo>/` in **Safari** on your iPhone.
+4. Tap **Share → Add to Home Screen**. Open it from the new icon.
 
-Railway can deploy both the API and the frontend from the same GitHub repo —
-you just point each service at a different subfolder.
+(Chrome on Android: menu → **Install app**.)
 
-### Backend service
+Any static host works the same way (Netlify, Cloudflare Pages, even Railway's static
+hosting). `vite.config.js` uses relative paths, so no base-path setting is needed.
 
-1. In Railway: **New Project → Deploy from GitHub repo** → pick this repo.
-2. On the service, open **Settings → Root Directory** and set it to `backend`.
-3. Railway auto-detects Python via `requirements.txt` (Nixpacks) and uses the
-   start command from `railway.json`/`Procfile`:
-   `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-4. **Variables** tab: add `CORS_ORIGINS` set to your frontend's Railway URL
-   once you have it (comma-separate multiple origins). Leave `DATABASE_URL`
-   unset to use SQLite, or attach Railway's Postgres plugin to get it set
-   automatically for a persistent database (recommended — Railway's
-   filesystem for SQLite is not guaranteed to persist across deploys).
-5. Deploy, then copy the generated public URL (Settings → Networking →
-   Generate Domain).
+## Your data
 
-### Frontend service
+- Stored only on the device, inside the installed app. Deleting the app, clearing website
+  data, or switching phones means starting empty, **unless you export a backup**.
+- **Data → Export backup** saves a `.json` file (on iPhone: Save to Files / AirDrop / iCloud Drive).
+  **Restore from file** loads it back, including on a new phone.
+- Installing to the home screen matters on iPhone: Safari can purge data for sites you
+  haven't opened in about a week, while installed home-screen apps are exempt.
+- The home-screen app and the Safari tab keep separate storage. Pick one and stick with it.
+- Updates: when you push a new version, the app picks it up the next time it's opened
+  with a connection. Your data is untouched.
 
-1. In the same Railway project: **New Service → GitHub repo** (same repo again).
-2. **Settings → Root Directory** → `frontend`.
-3. Build command: `npm install && npm run build`. Start command:
-   `npm run preview` (already wired to `--host 0.0.0.0 --port $PORT` in
-   `package.json`).
-4. **Variables** tab: add `VITE_API_URL` = the backend's public URL from the
-   step above (no trailing slash). Vite bakes this in at build time, so
-   redeploy the frontend if you ever change it.
-5. Generate a public domain for this service too — that's the link you'll
-   actually use.
-6. Go back to the backend service's `CORS_ORIGINS` variable and set it to
-   this frontend URL, then redeploy the backend.
+## Want a real App Store-style app instead?
 
-That's it — two services, one repo, each with its own root directory and
-its own public URL.
-
-## Notes
-
-- Categories are seeded on first boot (Groceries, Rent, Transport, etc.) —
-  edit `DEFAULT_CATEGORIES` in `backend/app/main.py` or add your own via
-  `POST /api/categories`.
-- "Saved" transactions have a `savings_destination` of `bank` or
-  `investment`, which is what powers the "where your savings sit" panel.
-- Subscriptions normalize weekly/monthly/yearly costs to a monthly figure
-  for the dashboard total.
+This code can be wrapped with [Capacitor](https://capacitorjs.com/) into a native iOS/Android
+app, but that needs a Mac with Xcode (and an Apple developer account for anything longer than
+7 days of sideloading). The PWA gets you ~95% of the experience without any of that.
